@@ -37,13 +37,13 @@ void TTTApp::run()
 						//perform a move depending on multiplayer mode
 						if (m_isMupltiplayer && m_currentPlayer == 2)
 						{
-								//AI's turn
-								aiMove();
+								//Second player's turn
+								playerMove();
 						}
 						else
 						{
-								//Second player's turn
-								playerMove();
+								//AI's turn
+								aiMove();
 						}
 				}
 
