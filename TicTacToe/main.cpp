@@ -1,13 +1,9 @@
-#include "Board.h"
+#include "TTTApp.h"
 
 int main()
 {
-		Board test(3);
+		TTTApp ttt;
+		ttt.run();
 
-		test.setValueAt(1, 1, 'x');
-
-		test.print();
-
-		system("Pause");
 		return 0;
 }
