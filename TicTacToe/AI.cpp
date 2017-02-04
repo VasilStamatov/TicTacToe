@@ -27,10 +27,10 @@ void AI::performMove(Board & _board)
 		switch (m_difficulty)
 		{
 		case Difficulty::EASY:
-				move = getRandomMove(_board);
+				move = getEasyMove(_board);
 				break;
 		case Difficulty::HARD:
-				move = getFatalisticMove(_board, m_aiIndex);
+				move = getHardMove(_board);
 				break;
 		case Difficulty::VERY_HARD:
 				move = getBestMove(_board, m_aiIndex, 0);
@@ -132,97 +132,78 @@ Move AI::getBestMove(Board & _board, uint _currentPlayer, uint _depth)
 		return moves.at(bestMove);
 }
 
-Move AI::getFatalisticMove(Board & _board, uint _currentPlayer)
+Move AI::getHardMove(Board & _board)
 {
-		//check for the end state to avoid infinite recursion
-		uint victory = _board.checkForVictory();
-		if (victory == 2)
-		{
-				//ai won
-				return Move(10);
-		}
-		else if (victory == 1)
-		{
-				//player won
-				return Move(-10);
-		}
-		else if (victory == 0)
-		{
-				return Move(0);
-		}
-		//surviving through the if checks means the game isn't over so continue recursing
-
-		//all of the children moves
-		std::vector<Move> moves;
-
+		//check if there is a winning slot for the ai
 		for (uint y = 0; y < _board.getSize(); y++)
 		{
 				for (uint x = 0; x < _board.getSize(); x++)
 				{
-						//check if the board has this slot free for moving
 						if (_board.getValueAt(x, y) == ' ')
 						{
-								Move move;
-								move.x = x;
-								move.y = y;
-								//temporality set the board's value at this position
-								if (_currentPlayer == m_aiIndex)
+								//place the possible move
+								_board.setValueAt(x, y, 'o');
+
+								//check for victory
+								uint victory = _board.checkForVictory();
+
+								if (victory == 2)
 								{
-										_board.setValueAt(x, y, 'o');
-										//set the score for the ai
-										move.score = getFatalisticMove(_board, m_playerIndex).score;
+										//ai won, so choose this move
+
+										//first reset the slot
+										_board.setValueAt(x, y, ' ');
+
+										//now return the move
+										Move move;
+										move.x = x;
+										move.y = y;
+										return move;
 								}
-								else
-								{
-										_board.setValueAt(x, y, 'x');
-										//set the score for the player
-										move.score = getFatalisticMove(_board, m_aiIndex).score;
-								}
-								moves.push_back(move);
-								//set the value back to empty so the board isn't actually changing
+
+								//reset the slot and continue
 								_board.setValueAt(x, y, ' ');
 						}
 				}
 		}
 
-		// Pick the best move for the current player
-		int bestMove{ 0 };
-
-		// Check if it's the ai player or the human player
-		if (_currentPlayer == m_aiIndex)
+		//check if there is a winning slot for the player
+		for (uint y = 0; y < _board.getSize(); y++)
 		{
-				// The ai player will try to get the highest numbered score
-				// so set the initial best score very low
-				int bestScore{ -1000000 };
-				for (uint i = 0; i < moves.size(); i++)
+				for (uint x = 0; x < _board.getSize(); x++)
 				{
-						if (moves.at(i).score > bestScore)
+						if (_board.getValueAt(x, y) == ' ')
 						{
-								bestMove = i;
-								bestScore = moves.at(i).score;
+								//place the possible move
+								_board.setValueAt(x, y, 'x');
+
+								//check for victory
+								uint victory = _board.checkForVictory();
+
+								if (victory == 1)
+								{
+										//player won, therefore BLOCK HIM!
+
+										//first reset the slot
+										_board.setValueAt(x, y, ' ');
+
+										//now return the move
+										Move move;
+										move.x = x;
+										move.y = y;
+										return move;
+								}
+								//reset the slot and continue
+								_board.setValueAt(x, y, ' ');
 						}
 				}
 		}
-		else
-		{
-				// The human player will try to get the lowest numbered score (to hinder the ai)
-				// so set the initial score to very high
-				int bestScore{ 1000000 };
-				for (uint i = 0; i < moves.size(); i++)
-				{
-						if (moves.at(i).score < bestScore)
-						{
-								bestMove = i;
-								bestScore = moves.at(i).score;
-						}
-				}
-		}
 
-		//finally return the very best move
-		return moves.at(bestMove);
+		//if nobody can win in the next slot, place it randomly
+		return getEasyMove(_board);
 }
 
-Move AI::getRandomMove(Board & _board)
+Move AI::getEasyMove(Board & _board)
 {
 		std::uniform_int_distribution<int> realDis(0, _board.getSize() - 1);
 
