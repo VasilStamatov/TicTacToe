@@ -65,25 +65,47 @@ void TTTApp::run()
 
 void TTTApp::start()
 {
+		//do some printing to request input from the player
+		printf("\n\n ------- Welcome to Tic-Tac-Toe ------- \n\n");
+		printf("Please enter the size of the board (3 to 9): \n");
+
+		bool validInput{ false };
+		int boardSize;
+
+		do
+		{
+				while (!(std::cin >> boardSize))
+				{
+						std::cin.clear();
+						std::cin.ignore(1000, '\n');
+						printf("ERROR: Invalid input!\n");
+				}
+				if (boardSize >= 3 && boardSize <= 9)
+				{
+						validInput = true;
+				}
+				else
+				{
+						std::cin.clear();
+						std::cin.ignore(1000, '\n');
+						printf("ERROR: Invalid input!\n");
+				}
+		} while (validInput == false);
 		//set the game state to playing
 		m_gameState = GameState::PLAYING;
 		//create the board
-		m_board.create(3);
+		m_board.create(boardSize);
 		//set the current player
 		m_currentPlayer = m_player1;
 
-		//do some printing to request input from the player
-		printf("\n\n ------- Welcome to Tic-Tac-Toe ------- \n\n");
 		printf("Would you like to play multiplayer ? (y/n): \n");
 
 		char input{ ' ' };
-		bool validInput{ true };
 
 		// take the player's input while making sure it's a valid one
 		do
 		{
 				validInput = true;
-
 				if (!(std::cin >> input))
 				{
 						std::cout << "Invalid input!";
@@ -125,7 +147,7 @@ void TTTApp::start()
 								printf("ERROR: Invalid input!\n");
 						}
 
-						if (difficulty == 1 || difficulty == 2 || difficulty == 3)
+						if (difficulty >= 1 && difficulty <= 3)
 						{
 								validInput = true;
 						}
