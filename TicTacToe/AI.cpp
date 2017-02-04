@@ -15,6 +15,7 @@ AI::~AI()
 
 void AI::init(uint _aiIndex, uint _playerIndex, const Difficulty& _difficulty)
 {
+		// initialize all the member variables
 		m_aiIndex = _aiIndex;
 		m_playerIndex = _playerIndex;
 		m_difficulty = _difficulty;
@@ -24,6 +25,8 @@ void AI::init(uint _aiIndex, uint _playerIndex, const Difficulty& _difficulty)
 void AI::performMove(Board & _board)
 {
 		Move move;
+
+		//perform move according to difficulty
 		switch (m_difficulty)
 		{
 		case Difficulty::EASY:
@@ -38,10 +41,12 @@ void AI::performMove(Board & _board)
 		default:
 				break;
 		}
+
+		//set the AI's move
 		_board.setValueAt(move.x, move.y, 'o');
 }
 
-Move AI::getBestMove(Board & _board, uint _currentPlayer, uint _depth)
+Move AI::getBestMove(const Board & _board, uint _currentPlayer, uint _depth)
 {
 		//check for the end state to avoid infinite recursion
 		uint victory = _board.checkForVictory();
@@ -57,14 +62,17 @@ Move AI::getBestMove(Board & _board, uint _currentPlayer, uint _depth)
 		}
 		else if (victory == 0)
 		{
+				//tie
 				return Move(0);
 		}
 		//surviving through the if checks means the game isn't over so continue recursing
+		//increment the depth as it's going deeper in the tree
 		_depth++;
 
-		//all of the children moves
+		//all of the possible moves
 		std::vector<Move> moves;
 
+		//check all possible moves in the current board
 		for (uint y = 0; y < _board.getSize(); y++)
 		{
 				for (uint x = 0; x < _board.getSize(); x++)
@@ -75,22 +83,26 @@ Move AI::getBestMove(Board & _board, uint _currentPlayer, uint _depth)
 								Move move;
 								move.x = x;
 								move.y = y;
-								//temporality set the board's value at this position
+
+								//use the move to make a new possible game state
 								if (_currentPlayer == m_aiIndex)
 								{
-										_board.setValueAt(x, y, 'o');
-										//set the score for the ai
-										move.score = getBestMove(_board, m_playerIndex, _depth).score;
+										//get the new possible game state
+										Board possibleGameState = _board.getNewState(x, y, 'o');
+
+										//set the score for the ai by checking what the player's best move would be
+										move.score = getBestMove(possibleGameState, m_playerIndex, _depth).score;
 								}
 								else
 								{
-										_board.setValueAt(x, y, 'x');
-										//set the score for the player
-										move.score = getBestMove(_board, m_aiIndex, _depth).score;
+										//get the new possible game state
+										Board possibleGameState = _board.getNewState(x, y, 'x');
+
+										//set the score for the player by checking the ai's best move
+										move.score = getBestMove(possibleGameState, m_aiIndex, _depth).score;
 								}
+								// push back all moves with their set coordinates and score
 								moves.push_back(move);
-								//set the value back to empty so the board isn't actually changing
-								_board.setValueAt(x, y, ' ');
 						}
 				}
 		}
@@ -104,12 +116,16 @@ Move AI::getBestMove(Board & _board, uint _currentPlayer, uint _depth)
 				// The ai player will try to get the highest numbered score
 				// so set the initial best score very low
 				int bestScore{ -1000000 };
+
+				//go over all possible moves
 				for (uint i = 0; i < moves.size(); i++)
 				{
+						//check if the score of the current move is better than the current best score
 						if (moves.at(i).score > bestScore)
 						{
-								bestMove = i;
-								bestScore = moves.at(i).score;
+								//if the score is higher, then the current move is better
+								bestMove = i; //best move index set to this i index
+								bestScore = moves.at(i).score; // best current possible score set to the move's score
 						}
 				}
 		}
@@ -120,19 +136,21 @@ Move AI::getBestMove(Board & _board, uint _currentPlayer, uint _depth)
 				int bestScore{ 1000000 };
 				for (uint i = 0; i < moves.size(); i++)
 				{
+						// check if the current move's score is less than the best
 						if (moves.at(i).score < bestScore)
 						{
-								bestMove = i;
-								bestScore = moves.at(i).score;
+								//if it is, then this move is better for the human player
+								bestMove = i; //so set the index of the best move to this i index
+								bestScore = moves.at(i).score; //and set the current best score to the score of the move
 						}
 				}
 		}
 
-		//finally return the very best move
+		//finally return the very best move for the current player
 		return moves.at(bestMove);
 }
 
-Move AI::getHardMove(Board & _board)
+Move AI::getHardMove(const Board & _board)
 {
 		//check if there is a winning slot for the ai
 		for (uint y = 0; y < _board.getSize(); y++)
@@ -142,27 +160,19 @@ Move AI::getHardMove(Board & _board)
 						if (_board.getValueAt(x, y) == ' ')
 						{
 								//place the possible move
-								_board.setValueAt(x, y, 'o');
+								Board possibleGameState = _board.getNewState(x, y, 'o');
 
 								//check for victory
-								uint victory = _board.checkForVictory();
+								uint victory = possibleGameState.checkForVictory();
 
 								if (victory == 2)
 								{
 										//ai won, so choose this move
-
-										//first reset the slot
-										_board.setValueAt(x, y, ' ');
-
-										//now return the move
 										Move move;
 										move.x = x;
 										move.y = y;
 										return move;
 								}
-
-								//reset the slot and continue
-								_board.setValueAt(x, y, ' ');
 						}
 				}
 		}
@@ -175,26 +185,19 @@ Move AI::getHardMove(Board & _board)
 						if (_board.getValueAt(x, y) == ' ')
 						{
 								//place the possible move
-								_board.setValueAt(x, y, 'x');
+								Board possibleGameState = _board.getNewState(x, y, 'x');
 
 								//check for victory
-								uint victory = _board.checkForVictory();
+								uint victory = possibleGameState.checkForVictory();
 
 								if (victory == 1)
 								{
 										//player won, therefore BLOCK HIM!
-
-										//first reset the slot
-										_board.setValueAt(x, y, ' ');
-
-										//now return the move
 										Move move;
 										move.x = x;
 										move.y = y;
 										return move;
 								}
-								//reset the slot and continue
-								_board.setValueAt(x, y, ' ');
 						}
 				}
 		}
@@ -203,22 +206,26 @@ Move AI::getHardMove(Board & _board)
 		return getEasyMove(_board);
 }
 
-Move AI::getEasyMove(Board & _board)
+Move AI::getEasyMove(const Board & _board)
 {
+		//randomly generate a possible move
 		std::uniform_int_distribution<int> realDis(0, _board.getSize() - 1);
 
 		int x = realDis(m_generator);
 		int y = realDis(m_generator);
 
+		//make sure the move is legal by checking the current value at the board coordinates
 		while (_board.getValueAt(x, y) != ' ')
 		{
 				x = realDis(m_generator);
 				y = realDis(m_generator);
 		}
 
+		//by this move the move coordinates should be okay, so create the new move
 		Move move;
 		move.x = x;
 		move.y = y;
 
+		//return the randomly generated move
 		return move;
 }

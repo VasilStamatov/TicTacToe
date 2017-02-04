@@ -4,7 +4,12 @@
 
 Board::Board(uint _size)
 {
+		//create the board
 		create(_size);
+}
+
+Board::Board(const Board & _other) : m_board(_other.m_board), m_size(_other.m_size)
+{
 }
 
 Board::~Board()
@@ -22,14 +27,17 @@ void Board::create(uint _size)
 		{
 				_size = 9;
 		}
+		//set the clamped size
 		m_size = _size;
-
+		//set the board size
 		m_board.resize(m_size * m_size);
+		//clear the board
 		clear();
 }
 
 void Board::clear()
 {
+		//simply set all board indices to empty
 		for (uint i = 0; i < m_board.size(); i++)
 		{
 				m_board.at(i) = ' ';
@@ -39,38 +47,40 @@ void Board::clear()
 void Board::print() const
 {
 		//instead of printing to the console multiple times, it is faster to build 1 string and output it once
-		std::string text{ "" };
+		std::string buffer{ "" };
 
 		//reserve some memory for the string so that it's resized less often
-		text.reserve(m_size * m_size * 4);
+		buffer.reserve(m_size * m_size * 4);
 
-		text += '\n';
+		//write to the buffer as if it's printing out
+		buffer += '\n';
 
 		for (uint i = 0; i < m_size; i++)
 		{
-				text += " |" + std::to_string(i);
+				buffer += " |" + std::to_string(i);
 		}
 
-		text += "|\n";
+		buffer += "|\n";
 
 		for (uint y = 0; y < m_size; y++)
 		{
-				text += " -------\n";
-				text += std::to_string(y) + "|";
+				buffer += " -------\n";
+				buffer += std::to_string(y) + "|";
 
 				for (uint x = 0; x < m_size; x++)
 				{
-						text += getValueAt(x, y);
-						text += "|";
+						buffer += getValueAt(x, y);
+						buffer += "|";
 				}
 
-				text += '\n';
+				buffer += '\n';
 		}
 
-		printf("%s\n", text.c_str());
+		//print the ready buffer
+		printf("%s\n", buffer.c_str());
 }
 
-uint Board::checkForVictory()
+uint Board::checkForVictory() const
 {
 		bool victory{ false };
 		char boardValue{ ' ' };
@@ -97,13 +107,14 @@ uint Board::checkForVictory()
 						{
 								//check who won
 
-								//x is the player
+								//x is the player1
 								if (boardValue == 'x')
 								{
 										return 1;
 								}
 								else
 								{
+										//otherwise, it's player 2
 										return 2;
 								}
 						}
@@ -215,4 +226,16 @@ uint Board::checkForVictory()
 		}
 		// return 0 for a tie, as all the board has been filled
 		return 0;
+}
+
+Board Board::getNewState(uint _x, uint _y, char _val) const
+{
+		//create a new board which is a copy of the current one
+		Board newBoard(*this);
+
+		//set the move on the new board
+		newBoard.setValueAt(_x, _y, _val);
+
+		//and return it
+		return newBoard;
 }

@@ -65,16 +65,21 @@ void TTTApp::run()
 
 void TTTApp::start()
 {
+		//set the game state to playing
 		m_gameState = GameState::PLAYING;
+		//create the board
 		m_board.create(3);
+		//set the current player
 		m_currentPlayer = m_player1;
 
+		//do some printing to request input from the player
 		printf("\n\n ------- Welcome to Tic-Tac-Toe ------- \n\n");
 		printf("Would you like to play multiplayer ? (y/n): \n");
 
 		char input{ ' ' };
 		bool validInput{ true };
 
+		// take the player's input while making sure it's a valid one
 		do
 		{
 				validInput = true;
@@ -101,14 +106,16 @@ void TTTApp::start()
 
 		} while (validInput == false);
 
+		//check if the game is not mupltiplayer(only 1 human)
 		if (!m_isMupltiplayer)
 		{
+				//prompt for input again
 				printf("\n\n What difficulty AI would you like to play against ?\n");
 				printf("\tPress 1 for easy \n\tPress 2 for hard \n\tPress 3 for very hard\n");
 
 				uint difficulty;
 				validInput = false;
-
+				//take the input for the ai difficulty, while making sure it's valid
 				do
 				{
 						while (!(std::cin >> difficulty))
@@ -129,17 +136,20 @@ void TTTApp::start()
 								printf("ERROR: Invalid input!\n");
 						}
 				} while (validInput == false);
-				
+
+				//initialize the ai with proper value
 				m_ai.init(m_player2, m_player1, Difficulty(difficulty));
 		}
 }
 
 void TTTApp::playerMove()
 {
+		//perform a human-controlled move
 		bool validInput{ false };
 		uint x{ 0 };
 		uint y{ 0 };
 
+		//take the human's input and make sure it's valid
 		do
 		{
 				printf("Enter the coordinate on the x axis (column): ");
@@ -191,11 +201,13 @@ void TTTApp::playerMove()
 
 void TTTApp::aiMove()
 {
+		//let the ai perform a move
 		m_ai.performMove(m_board);
 }
 
 void TTTApp::changePlayer()
 {
+		//change whose turn it currently is
 		if (m_currentPlayer == m_player1)
 		{
 				m_currentPlayer = m_player2;
@@ -208,9 +220,12 @@ void TTTApp::changePlayer()
 
 void TTTApp::endGame(uint result)
 {
+		//clear the screen
 		clearScreen();
+		//show the final board
 		m_board.print();
 
+		//print how the game ended accordingly
 		if (result == 0)
 		{
 				printf("\n\n The game ended in a draw ! Press 'e' to exit or any other key to start again: ");
@@ -227,24 +242,31 @@ void TTTApp::endGame(uint result)
 				}
 		}
 
+		//take another input from the player wether he should continue playing or exit
 		char input{ ' ' };
 		std::cin >> input;
 		if (input == 'e' || input == 'E')
 		{
+				//exit the game on the next while check
 				m_gameState = GameState::EXIT;
 		}
 		else
 		{
-				//restart the game
+				//clear the screen
 				clearScreen();
+				//and restart the game
 				start();
 		}
 }
 
-void TTTApp::clearScreen()
+void TTTApp::clearScreen() const
 {
+		//print 100 new lines
+		std::string buffer;
+		buffer.reserve(100);
 		for (int i = 0; i < 5; i++)
 		{
-				printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+				buffer += ("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 		}
+		printf("%s\n", buffer.c_str());
 }
