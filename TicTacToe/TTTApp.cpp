@@ -103,7 +103,34 @@ void TTTApp::start()
 
 		if (!m_isMupltiplayer)
 		{
-				m_ai.init(m_player2, m_player1);
+				printf("\n\n What difficulty AI would you like to play against ?\n");
+				printf("\tPress 1 for easy \n\tPress 2 for hard \n\tPress 3 for very hard\n");
+
+				uint difficulty;
+				validInput = false;
+
+				do
+				{
+						while (!(std::cin >> difficulty))
+						{
+								std::cin.clear();
+								std::cin.ignore(1000, '\n');
+								printf("ERROR: Invalid input!\n");
+						}
+
+						if (difficulty == 1 || difficulty == 2 || difficulty == 3)
+						{
+								validInput = true;
+						}
+						else
+						{
+								std::cin.clear();
+								std::cin.ignore(1000, '\n');
+								printf("ERROR: Invalid input!\n");
+						}
+				} while (validInput == false);
+				
+				m_ai.init(m_player2, m_player1, Difficulty(difficulty));
 		}
 }
 
