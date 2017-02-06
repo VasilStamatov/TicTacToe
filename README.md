@@ -1,4 +1,2 @@
 # TicTacToe
-TicTacToe game made for university assignment.
-
-Made to practice using the binary tree data structure
+Simple console tic tac toe game with multiple difficulties AI behavior
