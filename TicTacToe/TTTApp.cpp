@@ -194,7 +194,7 @@ void TTTApp::playerMove()
 
 				//check if the coordinates are higher than the size of the board
 				//The coordinates cannot be smaller as it's an unisgned int so it's always at least 0
-				if (x > m_board.getSize() || y > m_board.getSize())
+				if (x >= m_board.getSize() || y >= m_board.getSize())
 				{
 						printf("ERROR: Invalid X or Y!\n");
 				}
